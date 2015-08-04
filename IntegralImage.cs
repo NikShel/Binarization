@@ -57,49 +57,22 @@ namespace AdaptiveTheresholding
             return array;
         }
 
-        private bool IsInImage(int x, int y)
+        public void GetData(int x, int y, out int count, out long sum, out long sumSqr)
         {
-            return (x >= 0 && y >= 0 && x < sumImage.Length && y < sumImage[0].Length);
+            int leftBorder = Math.Max(0, x - radius);
+            int rightBorder = Math.Min(sqrImage.Length - 1, x + radius);
+            int topBorder = Math.Max(0, y - radius);
+            int bottomBorder = Math.Min(sqrImage[0].Length - 1, y + radius);
+
+            count = (rightBorder - leftBorder) * (bottomBorder - topBorder);
+            sum = GetRectangleSum(leftBorder, rightBorder, topBorder, bottomBorder, sumImage);
+            sumSqr = GetRectangleSum(leftBorder, rightBorder, topBorder, bottomBorder, sqrImage);
         }
 
-        public Tuple<double, int> GetMean(int x, int y)  //Среднее значение пикселя в radius-окрестности, количество пикселей
+        private long GetRectangleSum(int left, int right, int top, int bottom, long[][] integralImage)  //Сумма пикселей в прямоугольнике
         {
-            if (!IsInImage(x, y))
-                throw new ArgumentOutOfRangeException();
-
-            Rectangle rect;
-            if (!IsInImage(x + radius, y + radius) || !IsInImage(x - radius, y - radius))
-                rect = GetCorrectRectangle(x, y);
-            else
-                rect = new Rectangle() { X = x - radius, Y = y - radius, Height = 2 * radius - 1, Width = 2 * radius - 1};
-            return new Tuple<double, int> (GetRectangleSum(rect, sumImage) / (rect.Width * rect.Height), (rect.Width * rect.Height));
-        }
-
-        public double GetSumOfSquares(int x, int y)  //Сумма квадратов пикселей из radius-окрестности 
-        {
-            if (!IsInImage(x, y))
-                throw new ArgumentOutOfRangeException();
-
-            Rectangle rect;
-            if (!IsInImage(x + radius, y + radius) || !IsInImage(x - radius, y - radius))
-                rect = GetCorrectRectangle(x, y);
-            else
-                rect = new Rectangle() { X = x - radius, Y = y - radius, Height = 2 * radius - 1, Width = 2 * radius - 1};
-            return GetRectangleSum(rect, sqrImage);
-        }
-
-        private double GetRectangleSum(Rectangle rect, long[][] integralImage)  //Сумма пикселей в прямоугольнике rect 
-        {
-            return integralImage[rect.Right][rect.Bottom] + integralImage[rect.Left][rect.Top]
-                - integralImage[rect.Right][rect.Top] - integralImage[rect.Left][rect.Bottom];
-        }
-
-        private Rectangle GetCorrectRectangle(int x, int y)
-        {
-            var mainRectangle = new Rectangle() { Width = sumImage.Length - 1, Height = sumImage[0].Length - 1};
-            var currentRectangle = new Rectangle() {X = x - radius, Y = y - radius, Width = 2 * radius - 1, Height = 2 * radius - 1};
-            currentRectangle.Intersect(mainRectangle);
-            return currentRectangle;
+            return integralImage[right][bottom] + integralImage[left][top]
+                - integralImage[right][top] - integralImage[left][bottom];
         }
     }
 }

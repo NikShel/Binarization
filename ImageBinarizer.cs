@@ -83,12 +83,11 @@ namespace AdaptiveTheresholding
 
         private byte GetThreshold(int x, int y, IntegralImage integralImage)
         {
-            int heightMax = y + RADIUS;
-            int widthMax = x + RADIUS;
-            Tuple<double, int> getMeanResult = integralImage.GetMean(x, y);
-            double mean = getMeanResult.Item1;
-            int count = getMeanResult.Item2;
-            double standartDeviation = integralImage.GetSumOfSquares(x, y) - mean * count;
+            int count;
+            long sum, sqrSum;
+            integralImage.GetData(x, y, out count, out sum, out sqrSum);
+            double mean = (double)sum / count;
+            double standartDeviation = sqrSum - mean * count;
             standartDeviation = Math.Sqrt(1.0 / (count * count) * standartDeviation);
             double threshold = mean * (1 + COEFFICIENT * ((standartDeviation / 128) - 1));
             threshold = Math.Round(threshold);
@@ -118,6 +117,20 @@ namespace AdaptiveTheresholding
                     thresholdedImage[x][y] = isWhite;
                 }
             });
+            //for (int x = 0; x < maxX; x++)
+            //{
+            //    for (int y = 0; y < maxY; y++)
+            //    {
+            //        bool isWhite = true;
+            //        for (int i = 0; i < 3; i++)
+            //        {
+            //            byte threshold = GetThreshold1(x, y, IntegralImages[i]);
+            //            //threshold -= offsetConstant;
+            //            isWhite = isWhite && (RGBChannelsImages[i][x][y] >= threshold);
+            //        }
+            //        thresholdedImage[x][y] = isWhite;
+            //    }
+            //}
         }
     }
 }
