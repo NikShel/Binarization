@@ -11,8 +11,8 @@ namespace AdaptiveTheresholding
         private bool[][] thresholdedImage;
 
         private const int RADIUS = 10;
-        private const int OFFSET = 2;
-        private const double COEFFICIENT = 0.1; //0.1
+        private const int OFFSET = 0;
+        private const double COEFFICIENT = 0.2; //0.1
 
         private IntegralImage[] IntegralImages = new IntegralImage[3];
         private byte[][][] RGBChannelsImages = new byte[3][][];
@@ -87,8 +87,8 @@ namespace AdaptiveTheresholding
             long sum, sqrSum;
             integralImage.GetData(x, y, out count, out sum, out sqrSum);
             double mean = (double)sum / count;
-            double standartDeviation = sqrSum - mean * count;
-            standartDeviation = Math.Sqrt(1.0 / (count * count) * standartDeviation);
+            double tmp = sqrSum - (2 * mean * sum) + (mean * mean * count);
+            double standartDeviation = Math.Sqrt(1.0 / (count * count) * tmp);
             double threshold = mean * (1 + COEFFICIENT * ((standartDeviation / 128) - 1));
             threshold = Math.Round(threshold);
             if (threshold > 255)
